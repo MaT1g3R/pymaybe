@@ -23,7 +23,7 @@ def load_tests(loader, tests, ignore):
     tests.addTests(
         doctest.DocTestSuite(
             pymaybe,
-            globs=pymaybe.get_doctest_globs(),
+            globs=pymaybe.pymaybe.get_doctest_globs(),
             optionflags=doctest.IGNORE_EXCEPTION_DETAIL
         )
     )
