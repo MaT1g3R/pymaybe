@@ -9,6 +9,8 @@ class Maybe(object):
 
 
 class Nothing(Maybe):
+    __slots__ = ()
+
     def is_some(self):
         return False
 
@@ -114,6 +116,9 @@ class Nothing(Maybe):
 
 
 class Something(Maybe):
+    __slots__ = ('__value',)
+
+
     def __init__(self, value):
         self.__value = value
 
