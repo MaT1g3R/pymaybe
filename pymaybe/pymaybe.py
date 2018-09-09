@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from sys import getsizeof
+from typing import TypeVar, Generic, Union
+
+
+T = TypeVar('T')
+
 
 class NothingValueError(ValueError):
     pass
 
-class Maybe(object):
-    pass
 
-
-class Nothing(Maybe):
+class Nothing(Generic[T]):
     __slots__ = ()
 
     def is_some(self):
@@ -17,7 +19,7 @@ class Nothing(Maybe):
     def is_none(self):
         return True
 
-    def get(self):
+    def get(self) -> T:
         raise NothingValueError('No such element')
 
     def or_else(self, els=None):
@@ -115,11 +117,10 @@ class Nothing(Maybe):
     # endregion
 
 
-class Something(Maybe):
+class Something(Generic[T]):
     __slots__ = ('__value',)
 
-
-    def __init__(self, value):
+    def __init__(self, value: T):
         self.__value = value
 
     def __call__(self, *args, **kwargs):
@@ -182,6 +183,7 @@ class Something(Maybe):
             return self.get() >= other.get()
 
         return self.get() >= other
+
     # endregion
 
     def is_some(self):
@@ -190,7 +192,7 @@ class Something(Maybe):
     def is_none(self):
         return False
 
-    def get(self):
+    def get(self) -> T:
         return self.__value
 
     # pylint: disable=W0613
@@ -246,7 +248,7 @@ class Something(Maybe):
     def __missing__(self, key):
         klass = self.__value.__class__
         if hasattr(klass, '__missing__') and \
-                callable(getattr(klass, '__missing__')):
+            callable(getattr(klass, '__missing__')):
             return maybe(self.__value.__missing__(key))
 
         return Nothing()
@@ -375,7 +377,8 @@ class Something(Maybe):
         return maybe(other % self.__value)
 
     def __rdivmod__(self, other):
-        """Implements behavior for long division using the divmod() built in function, when divmod(other, self) is called."""
+        """Implements behavior for long division using the divmod() built in function,
+        when divmod(other, self) is called."""
         return maybe(divmod(other, self.__value))
 
     def __rpow__(self, other):
@@ -469,7 +472,10 @@ class Something(Maybe):
     # endregion
 
 
-def maybe(value):
+Maybe = Union[Something[T], Nothing[T]]
+
+
+def maybe(value: T) -> Maybe[T]:
     """Wraps an object with a Maybe instance.
 
       >>> maybe("I'm a value")
@@ -566,7 +572,7 @@ def maybe(value):
         '0'
 
     """
-    if isinstance(value, Maybe):
+    if isinstance(value, (Something, Nothing)):
         return value
 
     if value is not None:
@@ -600,4 +606,5 @@ def get_doctest_globs():
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod(globs=get_doctest_globs())
